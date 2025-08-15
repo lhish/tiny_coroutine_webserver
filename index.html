@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        a {
+            display: block;
+            margin-top: 10px;
+            text-decoration: none;
+            color: #007bff;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Login</h1>
+    <form action="/process_login" id="login-form" method="POST">
+        <input name="username" placeholder="Username" required type="text">
+        <input name="password" placeholder="Password" required type="password">
+        <button type="submit">Login</button>
+    </form>
+    <a href="/register.html">Register here</a>
+</div>
+
+<script>
+    // 登录失败时的提示
+    const loginForm = document.getElementById('login-form');
+    loginForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+        const formData = new FormData(loginForm);
+        fetch('/process_login', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.text())
+            .then(data => {
+                if (data.includes("Invalid credentials")) {
+                    alert("Incorrect username or password. Please try again.");
+                    return
+                }
+                if (!data.includes("Invalid")) {
+                    window.location.href = data;
+                }
+            });
+    });
+</script>
+
+</body>
+</html>

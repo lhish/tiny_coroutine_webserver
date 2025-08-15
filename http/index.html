@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Chat Room</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        #chat-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 80%;
+            margin: 20px auto;
+            max-width: 600px;
+            border: 1px solid #ddd;
+            background-color: white;
+        }
+
+        #messages {
+            height: 400px;
+            overflow-y: scroll;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        #message-input {
+            display: flex;
+            padding: 10px;
+        }
+
+        #message-input input {
+            width: 80%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        #message-input button {
+            width: 20%;
+            padding: 10px;
+            border: none;
+            background-color: #5cb85c;
+            color: white;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        #message-input button:hover {
+            background-color: #4cae4c;
+        }
+
+        .message {
+            margin-bottom: 10px;
+            padding: 8px;
+            background-color: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .message.user {
+            background-color: #d9edf7;
+        }
+    </style>
+</head>
+<body>
+<div id="chat-container">
+    <div id="messages"></div>
+    <div id="message-input">
+        <form action="/send-message" method="POST">
+            <input id="messageText" name="message" placeholder="Type your message..." required type="text">
+            <button type="submit">Send</button>
+        </form>
+    </div>
+</div>
+<script>
+    // Function to send chat message
+    async function sendMessage(event) {
+        event.preventDefault();  // Prevent form from refreshing the page
+        const messageText = document.getElementById('messageText').value;
+        let url = window.location.href;
+
+        let urlObj = new URL(url);
+
+        let username = urlObj.searchParams.get("username");
+        // Send message to server with username
+        await fetch('/send_message', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({message: messageText, username: username})
+        });
+
+        // Clear input field
+        document.getElementById('messageText').value = '';
+
+        // Reload messages to include the new one
+        await loadMessages();
+        setTimeout(() => {
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }, 0);
+    }
+
+    // Attach the sendMessage function to form submit
+    document.querySelector('form').addEventListener('submit', sendMessage);
+
+    // Existing function to load messages
+    async function loadMessages() {
+        const messagesDiv = document.getElementById('messages');
+
+        // Check if user is already at the bottom before loading new messages
+        const atBottom = messagesDiv.scrollTop + messagesDiv.clientHeight >= messagesDiv.scrollHeight;
+
+        const response = await fetch('/messages');
+        const data = await response.text();
+        messagesDiv.innerHTML = data;
+
+        // If the user was at the bottom, scroll to the bottom again after new messages are loaded
+        if (atBottom) {
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+    }
+
+
+    // Poll the server every 2 seconds to load new messages
+    setInterval(loadMessages, 500);
+</script>
+</body>
+</html>
